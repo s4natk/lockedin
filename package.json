@@ -1,0 +1,17 @@
+{
+  "name": "lockedin",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Gamified focus sessions for students. Next.js, NestJS, MySQL, and Prisma.",
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel --if-present dev",
+    "build": "pnpm -r --if-present build",
+    "lint": "pnpm -r --if-present lint",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test"
+  }
+}
