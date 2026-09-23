@@ -1,3 +1,5 @@
+import { STREAK_MINIMUM_MINUTES } from "@lockedin/shared";
+
 export default function Home() {
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col justify-between px-6 py-8">
@@ -12,7 +14,9 @@ export default function Home() {
         </p>
       </div>
 
-      <p className="font-mono text-xs text-zinc-600">25 minutes is enough to keep the streak.</p>
+        <p className="font-mono text-xs text-zinc-600">
+          {STREAK_MINIMUM_MINUTES} minutes is enough to keep the streak.
+        </p>
     </main>
   );
 }
