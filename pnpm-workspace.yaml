@@ -2,7 +2,9 @@ packages:
   - "apps/*"
   - "packages/*"
 allowBuilds:
+  '@prisma/engines': true
   esbuild: true
+  prisma: true
   unrs-resolver: true
 overrides:
   vite: 7.3.6

@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum FocusMode {
+  pomodoro
+  deep_work
+  flow
+  custom
+}
+
+enum SessionStatus {
+  active
+  completed
+  cancelled
+}
+
+model User {
+  id             String    @id @default(cuid())
+  clerkId        String    @unique
+  username       String?   @unique
+  email          String    @unique
+  totalXp        Int       @default(0)
+  currentStreak  Int       @default(0)
+  longestStreak  Int       @default(0)
+  lastActiveDate DateTime? @db.Date
+  createdAt      DateTime  @default(now())
+
+  categories Category[]
+  tasks      Task[]
+  sessions   FocusSession[]
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  createdAt DateTime @default(now())
+
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks    Task[]
+  sessions FocusSession[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model Task {
+  id                String    @id @default(cuid())
+  userId            String
+  categoryId        String?
+  title             String
+  completed         Boolean   @default(false)
+  estimatedSessions Int       @default(1)
+  createdAt         DateTime  @default(now())
+  completedAt       DateTime?
+
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  sessions FocusSession[]
+
+  @@index([userId])
+  @@index([categoryId])
+}
+
+model FocusSession {
+  id              String        @id @default(cuid())
+  userId          String
+  taskId          String?
+  categoryId      String?
+  mode            FocusMode
+  /// Planned length in seconds.
+  plannedDuration Int
+  /// Elapsed focus time in seconds. Empty until the session ends.
+  actualDuration  Int?
+  startedAt       DateTime
+  expectedEndAt   DateTime
+  completedAt     DateTime?
+  status          SessionStatus @default(active)
+  xpEarned        Int           @default(0)
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task     Task?     @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([userId, startedAt])
+  @@index([userId, status])
+  @@index([taskId])
+  @@index([categoryId])
+}
