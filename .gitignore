@@ -29,7 +29,7 @@ blob-report/
 # prisma
 apps/api/prisma/*.db
 apps/api/prisma/*.db-journal
-apps/api/generated/
+apps/api/src/generated/
 
 # editors and OS
 .DS_Store
