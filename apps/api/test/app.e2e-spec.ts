@@ -26,6 +26,10 @@ describe('Health (e2e)', () => {
     return request(app.getHttpServer()).get('/users/me').expect(401);
   });
 
+  it('GET /categories rejects a missing token', () => {
+    return request(app.getHttpServer()).get('/categories').expect(401);
+  });
+
   afterEach(async () => {
     await app.close();
   });

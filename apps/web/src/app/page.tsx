@@ -1,4 +1,5 @@
 import { Show, SignInButton, UserButton } from "@clerk/nextjs";
+import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { STREAK_MINIMUM_MINUTES } from "@lockedin/shared";
 
@@ -32,7 +33,12 @@ export default function Home() {
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col justify-between px-6 py-8">
       <div className="flex items-center justify-between">
-        <p className="font-mono text-xs tracking-[0.28em] text-zinc-500">LOCKEDIN</p>
+        <div className="flex items-center gap-6">
+          <p className="font-mono text-xs tracking-[0.28em] text-zinc-500">LOCKEDIN</p>
+          <Link href="/tasks" className="text-sm text-zinc-400">
+            Categories
+          </Link>
+        </div>
         <Show when="signed-out">
           <SignInButton>
             <button
