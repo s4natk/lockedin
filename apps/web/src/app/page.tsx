@@ -36,7 +36,7 @@ export default function Home() {
         <div className="flex items-center gap-6">
           <p className="font-mono text-xs tracking-[0.28em] text-zinc-500">LOCKEDIN</p>
           <Link href="/tasks" className="text-sm text-zinc-400">
-            Categories
+            Tasks
           </Link>
         </div>
         <Show when="signed-out">

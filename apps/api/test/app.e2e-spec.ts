@@ -30,6 +30,10 @@ describe('Health (e2e)', () => {
     return request(app.getHttpServer()).get('/categories').expect(401);
   });
 
+  it('GET /tasks rejects a missing token', () => {
+    return request(app.getHttpServer()).get('/tasks').expect(401);
+  });
+
   afterEach(async () => {
     await app.close();
   });
