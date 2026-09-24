@@ -34,6 +34,14 @@ describe('Health (e2e)', () => {
     return request(app.getHttpServer()).get('/tasks').expect(401);
   });
 
+  it('GET /sessions rejects a missing token', () => {
+    return request(app.getHttpServer()).get('/sessions').expect(401);
+  });
+
+  it('GET /progression rejects a missing token', () => {
+    return request(app.getHttpServer()).get('/progression').expect(401);
+  });
+
   afterEach(async () => {
     await app.close();
   });

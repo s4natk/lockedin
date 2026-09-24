@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 type Category = { id: string; name: string };
@@ -138,19 +139,22 @@ export function TaskList() {
       {error ? <p className="mt-3 text-sm text-zinc-400">{error}</p> : null}
       <ul className="mt-8 space-y-3">
         {tasks.map((task) => (
-          <li key={task.id}>
+          <li key={task.id} className="flex items-baseline justify-between gap-4">
             <button
               type="button"
               onClick={() => void toggle(task)}
-              className="flex w-full items-baseline justify-between gap-4 text-left"
+              className={`text-left ${task.completed ? "text-zinc-500 line-through" : "text-zinc-100"}`}
             >
-              <span className={task.completed ? "text-zinc-500 line-through" : "text-zinc-100"}>
-                {task.title}
-              </span>
-              <span className="shrink-0 font-mono text-xs text-zinc-500">
+              {task.title}
+            </button>
+            <span className="flex shrink-0 items-center gap-3 font-mono text-xs text-zinc-500">
+              <span>
                 {task.category?.name ?? "No category"} · {task.estimatedSessions}
               </span>
-            </button>
+              <Link href={`/focus?task=${task.id}`} className="text-zinc-300">
+                Focus
+              </Link>
+            </span>
           </li>
         ))}
       </ul>

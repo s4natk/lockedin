@@ -38,6 +38,9 @@ export default function Home() {
           <Link href="/tasks" className="text-sm text-zinc-400">
             Tasks
           </Link>
+          <Link href="/focus" className="text-sm text-zinc-400">
+            Focus
+          </Link>
         </div>
         <Show when="signed-out">
           <SignInButton>
