@@ -1,5 +1,32 @@
 import { Show, SignInButton, UserButton } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { STREAK_MINIMUM_MINUTES } from "@lockedin/shared";
+
+async function SignedInEmail() {
+  const { isAuthenticated, getToken } = await auth();
+  if (!isAuthenticated) return null;
+
+  const token = await getToken();
+  if (!token) return null;
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+
+  let email: string | null = null;
+
+  try {
+    const response = await fetch(`${apiUrl}/users/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+    if (!response.ok) return null;
+    const user = (await response.json()) as { email: string };
+    email = user.email;
+  } catch {
+    return null;
+  }
+
+  return <p className="font-mono text-xs text-zinc-500">{email}</p>;
+}
 
 export default function Home() {
   return (
@@ -17,7 +44,10 @@ export default function Home() {
           </SignInButton>
         </Show>
         <Show when="signed-in">
-          <UserButton />
+          <div className="flex items-center gap-4">
+            <SignedInEmail />
+            <UserButton />
+          </div>
         </Show>
       </div>
 

@@ -22,6 +22,10 @@ describe('Health (e2e)', () => {
       .expect({ status: 'ok' });
   });
 
+  it('GET /users/me rejects a missing token', () => {
+    return request(app.getHttpServer()).get('/users/me').expect(401);
+  });
+
   afterEach(async () => {
     await app.close();
   });
