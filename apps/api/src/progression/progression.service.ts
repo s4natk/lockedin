@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { levelFromTotalXp, requiredXpForLevel } from '@lockedin/shared';
+import { calendarDate, levelFromTotalXp, requiredXpForLevel } from '@lockedin/shared';
 import type { AuthUser } from '../auth/auth.types.js';
 import { UsersService } from '../users/users.service.js';
 
@@ -16,6 +16,9 @@ export class ProgressionService {
       level,
       currentLevelXp: requiredXpForLevel(level),
       nextLevelXp: requiredXpForLevel(level + 1),
+      currentStreak: user.currentStreak,
+      longestStreak: user.longestStreak,
+      lastActiveDate: user.lastActiveDate ? calendarDate(user.lastActiveDate) : null,
     };
   }
 }

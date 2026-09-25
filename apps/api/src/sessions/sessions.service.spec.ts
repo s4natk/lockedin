@@ -45,7 +45,11 @@ describe('SessionsService', () => {
   it('awards XP from elapsed minutes and ignores any client amount', async () => {
     const startedAt = new Date(Date.now() - 25 * 60 * 1000);
     const updateSession = vi.fn().mockResolvedValue({});
-    const updateUser = vi.fn().mockResolvedValue({ totalXp: 50 });
+    const updateUser = vi.fn().mockResolvedValue({
+      totalXp: 50,
+      currentStreak: 1,
+      longestStreak: 1,
+    });
     const service = new SessionsService(
       {
         focusSession: {
@@ -58,7 +62,14 @@ describe('SessionsService', () => {
         $transaction: vi.fn(async (callback: (tx: unknown) => Promise<unknown>) =>
           callback({
             focusSession: { update: updateSession },
-            user: { update: updateUser },
+            user: {
+              findUniqueOrThrow: vi.fn().mockResolvedValue({
+                currentStreak: 0,
+                longestStreak: 0,
+                lastActiveDate: null,
+              }),
+              update: updateUser,
+            },
           }),
         ),
       } as unknown as PrismaService,
@@ -74,10 +85,21 @@ describe('SessionsService', () => {
     );
     expect(updateUser).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: { totalXp: { increment: 50 } },
+        data: expect.objectContaining({
+          totalXp: { increment: 50 },
+          currentStreak: 1,
+          longestStreak: 1,
+        }),
       }),
     );
-    expect(result).toEqual({ id: 'session-1', xpEarned: 50, totalXp: 50, level: 1 });
+    expect(result).toEqual({
+      id: 'session-1',
+      xpEarned: 50,
+      totalXp: 50,
+      level: 1,
+      currentStreak: 1,
+      longestStreak: 1,
+    });
   });
 
   it('hides another user session on complete', async () => {

@@ -1,5 +1,12 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { FOCUS_MODES, levelFromTotalXp, xpForFocusedMinutes, type FocusModeId } from '@lockedin/shared';
+import {
+  FOCUS_MODES,
+  calendarDate,
+  levelFromTotalXp,
+  nextStreak,
+  xpForFocusedMinutes,
+  type FocusModeId,
+} from '@lockedin/shared';
 import type { AuthUser } from '../auth/auth.types.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { UsersService } from '../users/users.service.js';
@@ -94,7 +101,8 @@ export class SessionsService {
       Math.floor((completedAt.getTime() - session.startedAt.getTime()) / 1000),
     );
     const actualDuration = Math.min(elapsedSeconds, session.plannedDuration);
-    const xpEarned = xpForFocusedMinutes(Math.floor(actualDuration / 60));
+    const focusedMinutes = Math.floor(actualDuration / 60);
+    const xpEarned = xpForFocusedMinutes(focusedMinutes);
 
     const updatedUser = await this.prisma.$transaction(async (tx) => {
       await tx.focusSession.update({
@@ -107,10 +115,31 @@ export class SessionsService {
         },
       });
 
+      const current = await tx.user.findUniqueOrThrow({
+        where: { id: user.id },
+        select: { currentStreak: true, longestStreak: true, lastActiveDate: true },
+      });
+      const streak = nextStreak(
+        {
+          currentStreak: current.currentStreak,
+          longestStreak: current.longestStreak,
+          lastActiveDate: current.lastActiveDate ? calendarDate(current.lastActiveDate) : null,
+        },
+        completedAt,
+        focusedMinutes,
+      );
+
       return tx.user.update({
         where: { id: user.id },
-        data: { totalXp: { increment: xpEarned } },
-        select: { totalXp: true },
+        data: {
+          totalXp: { increment: xpEarned },
+          currentStreak: streak.currentStreak,
+          longestStreak: streak.longestStreak,
+          ...(streak.lastActiveDate
+            ? { lastActiveDate: new Date(`${streak.lastActiveDate}T00:00:00.000Z`) }
+            : {}),
+        },
+        select: { totalXp: true, currentStreak: true, longestStreak: true },
       });
     });
 
@@ -119,6 +148,8 @@ export class SessionsService {
       xpEarned,
       totalXp: updatedUser.totalXp,
       level: levelFromTotalXp(updatedUser.totalXp),
+      currentStreak: updatedUser.currentStreak,
+      longestStreak: updatedUser.longestStreak,
     };
   }
 

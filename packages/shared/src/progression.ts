@@ -32,3 +32,47 @@ export function levelFromTotalXp(totalXp: number): number {
 
   return level;
 }
+
+export type StreakState = {
+  currentStreak: number;
+  longestStreak: number;
+  lastActiveDate: string | null;
+};
+
+export function calendarDate(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+export function nextStreak(
+  state: StreakState,
+  completedAt: Date,
+  focusedMinutes: number,
+): StreakState {
+  if (focusedMinutes < STREAK_MINIMUM_MINUTES) {
+    return state;
+  }
+
+  const completedOn = calendarDate(completedAt);
+  let currentStreak = 1;
+
+  if (state.lastActiveDate) {
+    const gap = daysBetween(state.lastActiveDate, completedOn);
+    if (gap <= 0) {
+      currentStreak = state.currentStreak;
+    } else if (gap === 1) {
+      currentStreak = state.currentStreak + 1;
+    }
+  }
+
+  return {
+    currentStreak,
+    longestStreak: Math.max(state.longestStreak, currentStreak),
+    lastActiveDate: completedOn,
+  };
+}
+
+function daysBetween(earlier: string, later: string): number {
+  const start = Date.parse(`${earlier}T00:00:00.000Z`);
+  const end = Date.parse(`${later}T00:00:00.000Z`);
+  return Math.round((end - start) / 86_400_000);
+}

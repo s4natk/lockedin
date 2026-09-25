@@ -21,6 +21,7 @@ type Completion = {
   xpEarned: number;
   totalXp: number;
   level: number;
+  currentStreak: number;
 };
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
@@ -190,7 +191,7 @@ export function FocusSession() {
     <div className="max-w-xl">
       {completion ? (
         <p className="mb-8 font-mono text-sm text-zinc-300">
-          +{completion.xpEarned} XP · Level {completion.level} · {completion.totalXp} total
+          +{completion.xpEarned} XP · Level {completion.level} · {completion.currentStreak} day streak
         </p>
       ) : null}
       <form className="flex flex-col gap-3" onSubmit={start}>

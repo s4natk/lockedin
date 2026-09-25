@@ -11,9 +11,12 @@ export {
   LEVEL_XP_EXPONENT,
   STREAK_MINIMUM_MINUTES,
   XP_PER_FOCUSED_MINUTE,
+  calendarDate,
   levelFromTotalXp,
+  nextStreak,
   requiredXpForLevel,
   xpForFocusedMinutes,
+  type StreakState,
 } from './progression.js';
 
 export type SessionStatus = 'active' | 'completed' | 'cancelled';
