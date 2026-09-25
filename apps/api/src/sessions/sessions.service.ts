@@ -2,6 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import {
   FOCUS_MODES,
   calendarDate,
+  firstSessionBonus,
   levelFromTotalXp,
   nextStreak,
   xpForFocusedMinutes,
@@ -102,9 +103,23 @@ export class SessionsService {
     );
     const actualDuration = Math.min(elapsedSeconds, session.plannedDuration);
     const focusedMinutes = Math.floor(actualDuration / 60);
-    const xpEarned = xpForFocusedMinutes(focusedMinutes);
+    const baseXp = xpForFocusedMinutes(focusedMinutes);
 
-    const updatedUser = await this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
+      const dayStart = new Date(`${calendarDate(completedAt)}T00:00:00.000Z`);
+      const completedEarlierToday = await tx.focusSession.count({
+        where: {
+          userId: user.id,
+          status: 'completed',
+          completedAt: {
+            gte: dayStart,
+            lt: new Date(dayStart.getTime() + 86_400_000),
+          },
+        },
+      });
+      const bonusXp = firstSessionBonus(completedEarlierToday);
+      const xpEarned = baseXp + bonusXp;
+
       await tx.focusSession.update({
         where: { id: session.id },
         data: {
@@ -129,7 +144,7 @@ export class SessionsService {
         focusedMinutes,
       );
 
-      return tx.user.update({
+      const updatedUser = await tx.user.update({
         where: { id: user.id },
         data: {
           totalXp: { increment: xpEarned },
@@ -141,15 +156,18 @@ export class SessionsService {
         },
         select: { totalXp: true, currentStreak: true, longestStreak: true },
       });
+
+      return { updatedUser, xpEarned, bonusXp };
     });
 
     return {
       id: session.id,
-      xpEarned,
-      totalXp: updatedUser.totalXp,
-      level: levelFromTotalXp(updatedUser.totalXp),
-      currentStreak: updatedUser.currentStreak,
-      longestStreak: updatedUser.longestStreak,
+      xpEarned: result.xpEarned,
+      bonusXp: result.bonusXp,
+      totalXp: result.updatedUser.totalXp,
+      level: levelFromTotalXp(result.updatedUser.totalXp),
+      currentStreak: result.updatedUser.currentStreak,
+      longestStreak: result.updatedUser.longestStreak,
     };
   }
 

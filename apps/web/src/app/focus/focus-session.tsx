@@ -19,6 +19,7 @@ type Session = {
 
 type Completion = {
   xpEarned: number;
+  bonusXp: number;
   totalXp: number;
   level: number;
   currentStreak: number;
@@ -191,7 +192,9 @@ export function FocusSession() {
     <div className="max-w-xl">
       {completion ? (
         <p className="mb-8 font-mono text-sm text-zinc-300">
-          +{completion.xpEarned} XP · Level {completion.level} · {completion.currentStreak} day streak
+          +{completion.xpEarned} XP
+          {completion.bonusXp > 0 ? ` · +${completion.bonusXp} first session` : ""} · Level{" "}
+          {completion.level} · {completion.currentStreak} day streak
         </p>
       ) : null}
       <form className="flex flex-col gap-3" onSubmit={start}>

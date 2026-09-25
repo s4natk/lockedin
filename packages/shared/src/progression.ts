@@ -16,6 +16,10 @@ export function xpForFocusedMinutes(minutes: number): number {
   return Math.floor(minutes) * XP_PER_FOCUSED_MINUTE;
 }
 
+export function firstSessionBonus(completedEarlierToday: number): number {
+  return completedEarlierToday === 0 ? BONUS_XP.firstSessionToday : 0;
+}
+
 /** Total XP required to reach a level. Level 1 starts at 0. */
 export function requiredXpForLevel(level: number): number {
   if (level <= 1) return 0;

@@ -12,6 +12,7 @@ export {
   STREAK_MINIMUM_MINUTES,
   XP_PER_FOCUSED_MINUTE,
   calendarDate,
+  firstSessionBonus,
   levelFromTotalXp,
   nextStreak,
   requiredXpForLevel,

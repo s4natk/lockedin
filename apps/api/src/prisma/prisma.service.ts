@@ -15,8 +15,17 @@ export class PrismaService
       throw new Error('DATABASE_URL is not set');
     }
 
+    const url = new URL(databaseUrl);
+
     super({
-      adapter: new PrismaMariaDb(databaseUrl),
+      adapter: new PrismaMariaDb({
+        host: url.hostname,
+        port: url.port ? Number(url.port) : 3306,
+        user: decodeURIComponent(url.username),
+        password: decodeURIComponent(url.password),
+        database: url.pathname.replace(/^\//, ''),
+        allowPublicKeyRetrieval: true,
+      }),
     });
   }
 
