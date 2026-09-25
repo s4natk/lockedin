@@ -15,6 +15,7 @@ export {
   firstSessionBonus,
   levelFromTotalXp,
   nextStreak,
+  thirdSessionBonus,
   requiredXpForLevel,
   xpForFocusedMinutes,
   type StreakState,

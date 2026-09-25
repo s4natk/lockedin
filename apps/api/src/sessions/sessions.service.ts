@@ -3,6 +3,7 @@ import {
   FOCUS_MODES,
   calendarDate,
   firstSessionBonus,
+  thirdSessionBonus,
   levelFromTotalXp,
   nextStreak,
   xpForFocusedMinutes,
@@ -117,7 +118,10 @@ export class SessionsService {
           },
         },
       });
-      const bonusXp = firstSessionBonus(completedEarlierToday);
+      const firstBonus = firstSessionBonus(completedEarlierToday);
+      const thirdBonus = thirdSessionBonus(completedEarlierToday);
+      const bonusXp = firstBonus + thirdBonus;
+      const bonusKind = thirdBonus > 0 ? 'third' : firstBonus > 0 ? 'first' : null;
       const xpEarned = baseXp + bonusXp;
 
       await tx.focusSession.update({
@@ -157,13 +161,14 @@ export class SessionsService {
         select: { totalXp: true, currentStreak: true, longestStreak: true },
       });
 
-      return { updatedUser, xpEarned, bonusXp };
+      return { updatedUser, xpEarned, bonusXp, bonusKind };
     });
 
     return {
       id: session.id,
       xpEarned: result.xpEarned,
       bonusXp: result.bonusXp,
+      bonusKind: result.bonusKind,
       totalXp: result.updatedUser.totalXp,
       level: levelFromTotalXp(result.updatedUser.totalXp),
       currentStreak: result.updatedUser.currentStreak,

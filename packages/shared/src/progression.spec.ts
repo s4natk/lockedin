@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   firstSessionBonus,
+  thirdSessionBonus,
   levelFromTotalXp,
   nextStreak,
   requiredXpForLevel,
@@ -41,6 +42,14 @@ describe('firstSessionBonus', () => {
   it('awards 10 XP only when no session was completed earlier today', () => {
     expect(firstSessionBonus(0)).toBe(10);
     expect(firstSessionBonus(1)).toBe(0);
+  });
+});
+
+describe('thirdSessionBonus', () => {
+  it('awards 25 XP only for the third completed session today', () => {
+    expect(thirdSessionBonus(2)).toBe(25);
+    expect(thirdSessionBonus(0)).toBe(0);
+    expect(thirdSessionBonus(3)).toBe(0);
   });
 });
 
