@@ -94,6 +94,12 @@ export default function Home() {
           <Link href="/dashboard" className="text-sm text-zinc-400">
             Dashboard
           </Link>
+          <Link href="/analytics" className="text-sm text-zinc-400">
+            Analytics
+          </Link>
+          <Link href="/history" className="text-sm text-zinc-400">
+            History
+          </Link>
         </div>
         <Show when="signed-out">
           <SignInButton>

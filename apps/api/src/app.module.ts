@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AnalyticsModule } from './analytics/analytics.module.js';
 import { CategoriesModule } from './categories/categories.module.js';
 import { DashboardModule } from './dashboard/dashboard.module.js';
 import { HealthModule } from './health/health.module.js';
@@ -18,6 +19,7 @@ import { UsersModule } from './users/users.module.js';
     SessionsModule,
     ProgressionModule,
     DashboardModule,
+    AnalyticsModule,
   ],
 })
 export class AppModule {}

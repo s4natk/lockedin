@@ -275,4 +275,89 @@ describe('SessionsService', () => {
       }),
     );
   });
+
+  it('leaves paused time out of the XP', async () => {
+    const startedAt = new Date(Date.now() - 25 * 60 * 1000);
+    const updateSession = vi.fn().mockResolvedValue({});
+    const service = new SessionsService(
+      {
+        focusSession: {
+          findFirst: vi.fn().mockResolvedValue({
+            id: 'session-1',
+            startedAt,
+            plannedDuration: 25 * 60,
+            pausedSeconds: 10 * 60,
+            pausedAt: null,
+          }),
+        },
+        $transaction: vi.fn(async (callback: (tx: unknown) => Promise<unknown>) =>
+          callback({
+            focusSession: { update: updateSession, count: vi.fn().mockResolvedValue(1) },
+            user: {
+              findUniqueOrThrow: vi.fn().mockResolvedValue({
+                currentStreak: 0,
+                longestStreak: 0,
+                lastActiveDate: null,
+              }),
+              update: vi.fn().mockResolvedValue({
+                totalXp: 30,
+                currentStreak: 0,
+                longestStreak: 0,
+              }),
+            },
+          }),
+        ),
+      } as unknown as PrismaService,
+      users,
+    );
+
+    const result = await service.complete(authUser, 'session-1');
+
+    expect(updateSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ xpEarned: 30 }),
+      }),
+    );
+    expect(result.xpEarned).toBe(30);
+  });
+
+  it('pushes the end time forward when a pause ends', async () => {
+    const expectedEndAt = new Date(Date.now() + 10 * 60 * 1000);
+    const pausedAt = new Date(Date.now() - 30_000);
+    const update = vi.fn().mockResolvedValue({ id: 'session-1' });
+    const findFirst = vi
+      .fn()
+      .mockResolvedValueOnce({
+        id: 'session-1',
+        startedAt: new Date(),
+        plannedDuration: 25 * 60,
+        pausedAt: null,
+        pausedSeconds: 0,
+        expectedEndAt,
+      })
+      .mockResolvedValueOnce({
+        id: 'session-1',
+        startedAt: new Date(),
+        plannedDuration: 25 * 60,
+        pausedAt,
+        pausedSeconds: 0,
+        expectedEndAt,
+      });
+    const service = new SessionsService(
+      { focusSession: { findFirst, update } } as unknown as PrismaService,
+      users,
+    );
+
+    await service.pause(authUser, 'session-1');
+    await service.resume(authUser, 'session-1');
+
+    expect(update).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        data: expect.objectContaining({ pausedAt: null, pausedSeconds: 30 }),
+      }),
+    );
+    const resumeData = update.mock.calls[1][0].data as { expectedEndAt: Date };
+    expect(resumeData.expectedEndAt.getTime() - expectedEndAt.getTime()).toBeGreaterThanOrEqual(30_000);
+  });
 });

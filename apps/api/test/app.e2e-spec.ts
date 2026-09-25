@@ -46,6 +46,14 @@ describe('Health (e2e)', () => {
     return request(app.getHttpServer()).get('/dashboard').expect(401);
   });
 
+  it('GET /analytics/weekly rejects a missing token', () => {
+    return request(app.getHttpServer()).get('/analytics/weekly').expect(401);
+  });
+
+  it('GET /analytics/categories rejects a missing token', () => {
+    return request(app.getHttpServer()).get('/analytics/categories').expect(401);
+  });
+
   afterEach(async () => {
     await app.close();
   });

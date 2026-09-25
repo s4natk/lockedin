@@ -81,6 +81,9 @@ model FocusSession {
   startedAt       DateTime
   expectedEndAt   DateTime
   completedAt     DateTime?
+  pausedAt        DateTime?
+  /// Seconds already spent paused. The open pause is pausedAt until resume.
+  pausedSeconds   Int           @default(0)
   status          SessionStatus @default(active)
   xpEarned        Int           @default(0)
 

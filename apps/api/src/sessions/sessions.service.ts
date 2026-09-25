@@ -23,6 +23,8 @@ const sessionSelect = {
   startedAt: true,
   expectedEndAt: true,
   completedAt: true,
+  pausedAt: true,
+  pausedSeconds: true,
   status: true,
   xpEarned: true,
   taskId: true,
@@ -99,11 +101,7 @@ export class SessionsService {
     const user = await this.usersService.getOrCreate(authUser);
     const session = await this.requireOwnActive(user.id, sessionId);
     const completedAt = new Date();
-    const elapsedSeconds = Math.max(
-      0,
-      Math.floor((completedAt.getTime() - session.startedAt.getTime()) / 1000),
-    );
-    const actualDuration = Math.min(elapsedSeconds, session.plannedDuration);
+    const actualDuration = Math.min(focusedSeconds(session, completedAt), session.plannedDuration);
     const focusedMinutes = Math.floor(actualDuration / 60);
     const baseXp = xpForFocusedMinutes(focusedMinutes);
 
@@ -182,17 +180,53 @@ export class SessionsService {
     const user = await this.usersService.getOrCreate(authUser);
     const session = await this.requireOwnActive(user.id, sessionId);
     const endedAt = new Date();
-    const elapsedSeconds = Math.max(
-      0,
-      Math.floor((endedAt.getTime() - session.startedAt.getTime()) / 1000),
-    );
 
     return this.prisma.focusSession.update({
       where: { id: session.id },
       data: {
         status: 'cancelled',
-        actualDuration: Math.min(elapsedSeconds, session.plannedDuration),
+        actualDuration: Math.min(focusedSeconds(session, endedAt), session.plannedDuration),
         xpEarned: 0,
+      },
+      select: sessionSelect,
+    });
+  }
+
+  async pause(authUser: AuthUser, sessionId: string) {
+    const user = await this.usersService.getOrCreate(authUser);
+    const session = await this.requireOwnActive(user.id, sessionId);
+
+    if (session.pausedAt) {
+      return this.prisma.focusSession.findFirstOrThrow({
+        where: { id: session.id },
+        select: sessionSelect,
+      });
+    }
+
+    return this.prisma.focusSession.update({
+      where: { id: session.id },
+      data: { pausedAt: new Date() },
+      select: sessionSelect,
+    });
+  }
+
+  async resume(authUser: AuthUser, sessionId: string) {
+    const user = await this.usersService.getOrCreate(authUser);
+    const session = await this.requireOwnActive(user.id, sessionId);
+
+    if (!session.pausedAt) {
+      throw new ConflictException('Session is not paused');
+    }
+
+    const now = new Date();
+    const pausedMs = Math.max(0, now.getTime() - session.pausedAt.getTime());
+
+    return this.prisma.focusSession.update({
+      where: { id: session.id },
+      data: {
+        pausedAt: null,
+        pausedSeconds: session.pausedSeconds + Math.floor(pausedMs / 1000),
+        expectedEndAt: new Date(session.expectedEndAt.getTime() + pausedMs),
       },
       select: sessionSelect,
     });
@@ -201,7 +235,14 @@ export class SessionsService {
   private async requireOwnActive(userId: string, sessionId: string) {
     const session = await this.prisma.focusSession.findFirst({
       where: { id: sessionId, userId, status: 'active' },
-      select: { id: true, startedAt: true, plannedDuration: true },
+      select: {
+        id: true,
+        startedAt: true,
+        plannedDuration: true,
+        pausedAt: true,
+        pausedSeconds: true,
+        expectedEndAt: true,
+      },
     });
 
     if (!session) {
@@ -210,6 +251,17 @@ export class SessionsService {
 
     return session;
   }
+}
+
+function focusedSeconds(
+  session: { startedAt: Date; pausedAt?: Date | null; pausedSeconds?: number },
+  endedAt: Date,
+) {
+  const openPause = session.pausedAt
+    ? Math.max(0, Math.floor((endedAt.getTime() - session.pausedAt.getTime()) / 1000))
+    : 0;
+  const elapsed = Math.max(0, Math.floor((endedAt.getTime() - session.startedAt.getTime()) / 1000));
+  return Math.max(0, elapsed - (session.pausedSeconds ?? 0) - openPause);
 }
 
 function plannedSeconds(mode: FocusModeId, focusMinutes: number | undefined) {

@@ -59,6 +59,9 @@ export default async function DashboardPage() {
         <Link href="/focus" className="text-sm text-zinc-400">
           Focus
         </Link>
+        <Link href="/analytics" className="text-sm text-zinc-400">
+          Analytics
+        </Link>
       </div>
       <h1 className="mt-10 text-4xl font-medium tracking-tight">Today</h1>
       {dashboard ? (

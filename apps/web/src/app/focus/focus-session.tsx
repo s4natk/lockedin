@@ -5,6 +5,7 @@ import { FOCUS_MODE_IDS, FOCUS_MODES, type FocusModeId } from "@lockedin/shared"
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { AmbientAudio } from "./ambient-audio";
 import { formatRemaining, useFocusTimer } from "./use-focus-timer";
 
 type Task = { id: string; title: string };
@@ -14,6 +15,7 @@ type Session = {
   mode: FocusModeId;
   plannedDuration: number;
   expectedEndAt: string;
+  pausedAt: string | null;
   task: { id: string; title: string } | null;
 };
 
@@ -43,6 +45,7 @@ export function FocusSession() {
   const { remainingSeconds, progress } = useFocusTimer(
     session?.expectedEndAt ?? null,
     session?.plannedDuration ?? 0,
+    session?.pausedAt ?? null,
   );
 
   const load = useCallback(async () => {
@@ -149,6 +152,28 @@ export function FocusSession() {
     setSession(null);
   }
 
+  async function togglePause() {
+    if (!session || pending) return;
+    setPending(true);
+    setError(null);
+    const token = await getToken();
+    if (!token) return;
+
+    const action = session.pausedAt ? "resume" : "pause";
+    const response = await fetch(`${apiUrl}/sessions/${session.id}/${action}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setPending(false);
+
+    if (!response.ok) {
+      setError("Could not update the timer.");
+      return;
+    }
+
+    setSession((await response.json()) as Session);
+  }
+
   if (session) {
     const title = session.task?.title ?? "Focus";
 
@@ -164,11 +189,21 @@ export function FocusSession() {
         <div className="mt-8 h-1 w-full max-w-sm overflow-hidden rounded-full bg-zinc-800">
           <div className="h-full bg-zinc-100" style={{ width: `${progress * 100}%` }} />
         </div>
+        {session.pausedAt ? <p className="mt-6 text-sm text-zinc-400">Paused</p> : null}
         {remainingSeconds === 0 ? (
           <p className="mt-6 text-sm text-zinc-400">Time is up.</p>
         ) : null}
         {error ? <p className="mt-6 text-sm text-zinc-400">{error}</p> : null}
+        <AmbientAudio active={remainingSeconds > 0} />
         <div className="mt-10 flex gap-3">
+          <button
+            type="button"
+            onClick={() => void togglePause()}
+            disabled={pending || remainingSeconds === 0}
+            className="rounded-full border border-zinc-800 px-5 py-2 text-sm text-zinc-400"
+          >
+            {session.pausedAt ? "Resume" : "Pause"}
+          </button>
           <button
             type="button"
             onClick={() => void cancel()}

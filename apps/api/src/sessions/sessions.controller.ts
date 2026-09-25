@@ -23,6 +23,16 @@ export class SessionsController {
     return this.sessionsService.start(request.authUser, dto);
   }
 
+  @Post(':id/pause')
+  pause(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
+    return this.sessionsService.pause(request.authUser, id);
+  }
+
+  @Post(':id/resume')
+  resume(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
+    return this.sessionsService.resume(request.authUser, id);
+  }
+
   @Post(':id/complete')
   complete(@Req() request: AuthenticatedRequest, @Param('id') id: string) {
     return this.sessionsService.complete(request.authUser, id);
