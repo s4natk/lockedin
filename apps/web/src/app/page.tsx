@@ -91,6 +91,9 @@ export default function Home() {
           <Link href="/focus" className="text-sm text-zinc-400">
             Focus
           </Link>
+          <Link href="/dashboard" className="text-sm text-zinc-400">
+            Dashboard
+          </Link>
         </div>
         <Show when="signed-out">
           <SignInButton>
