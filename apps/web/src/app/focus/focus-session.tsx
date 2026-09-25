@@ -21,6 +21,7 @@ type Completion = {
   xpEarned: number;
   bonusXp: number;
   bonusKind: "first" | "third" | null;
+  streakBonus: number;
   totalXp: number;
   level: number;
   currentStreak: number;
@@ -196,8 +197,8 @@ export function FocusSession() {
           +{completion.xpEarned} XP
           {completion.bonusXp > 0
             ? ` · +${completion.bonusXp} ${completion.bonusKind === "third" ? "third session" : "first session"}`
-            : ""}{" "}
-          · Level{" "}
+            : ""}
+          {completion.streakBonus > 0 ? ` · +${completion.streakBonus} seven-day streak` : ""} · Level{" "}
           {completion.level} · {completion.currentStreak} day streak
         </p>
       ) : null}

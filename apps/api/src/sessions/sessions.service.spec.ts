@@ -97,6 +97,7 @@ describe('SessionsService', () => {
       xpEarned: 50,
       bonusXp: 0,
       bonusKind: null,
+      streakBonus: 0,
       totalXp: 50,
       level: 1,
       currentStreak: 1,
@@ -192,6 +193,51 @@ describe('SessionsService', () => {
     );
     expect(result.bonusXp).toBe(25);
     expect(result.bonusKind).toBe('third');
+  });
+
+  it('adds 50 XP when the streak reaches 7 days', async () => {
+    const startedAt = new Date(Date.now() - 25 * 60 * 1000);
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const updateSession = vi.fn().mockResolvedValue({});
+    const service = new SessionsService(
+      {
+        focusSession: {
+          findFirst: vi.fn().mockResolvedValue({
+            id: 'session-7',
+            startedAt,
+            plannedDuration: 25 * 60,
+          }),
+        },
+        $transaction: vi.fn(async (callback: (tx: unknown) => Promise<unknown>) =>
+          callback({
+            focusSession: { update: updateSession, count: vi.fn().mockResolvedValue(1) },
+            user: {
+              findUniqueOrThrow: vi.fn().mockResolvedValue({
+                currentStreak: 6,
+                longestStreak: 6,
+                lastActiveDate: yesterday,
+              }),
+              update: vi.fn().mockResolvedValue({
+                totalXp: 100,
+                currentStreak: 7,
+                longestStreak: 7,
+              }),
+            },
+          }),
+        ),
+      } as unknown as PrismaService,
+      users,
+    );
+
+    const result = await service.complete(authUser, 'session-7');
+
+    expect(updateSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ xpEarned: 100 }),
+      }),
+    );
+    expect(result.streakBonus).toBe(50);
+    expect(result.currentStreak).toBe(7);
   });
 
   it('hides another user session on complete', async () => {

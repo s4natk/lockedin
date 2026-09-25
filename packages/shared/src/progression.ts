@@ -24,6 +24,10 @@ export function thirdSessionBonus(completedEarlierToday: number): number {
   return completedEarlierToday === 2 ? BONUS_XP.threeSessionsToday : 0;
 }
 
+export function sevenDayStreakBonus(previousStreak: number, nextCurrentStreak: number): number {
+  return previousStreak < 7 && nextCurrentStreak === 7 ? BONUS_XP.sevenDayStreak : 0;
+}
+
 /** Total XP required to reach a level. Level 1 starts at 0. */
 export function requiredXpForLevel(level: number): number {
   if (level <= 1) return 0;

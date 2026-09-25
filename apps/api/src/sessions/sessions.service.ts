@@ -6,6 +6,7 @@ import {
   thirdSessionBonus,
   levelFromTotalXp,
   nextStreak,
+  sevenDayStreakBonus,
   xpForFocusedMinutes,
   type FocusModeId,
 } from '@lockedin/shared';
@@ -120,20 +121,6 @@ export class SessionsService {
       });
       const firstBonus = firstSessionBonus(completedEarlierToday);
       const thirdBonus = thirdSessionBonus(completedEarlierToday);
-      const bonusXp = firstBonus + thirdBonus;
-      const bonusKind = thirdBonus > 0 ? 'third' : firstBonus > 0 ? 'first' : null;
-      const xpEarned = baseXp + bonusXp;
-
-      await tx.focusSession.update({
-        where: { id: session.id },
-        data: {
-          status: 'completed',
-          actualDuration,
-          completedAt,
-          xpEarned,
-        },
-      });
-
       const current = await tx.user.findUniqueOrThrow({
         where: { id: user.id },
         select: { currentStreak: true, longestStreak: true, lastActiveDate: true },
@@ -147,6 +134,20 @@ export class SessionsService {
         completedAt,
         focusedMinutes,
       );
+      const streakBonus = sevenDayStreakBonus(current.currentStreak, streak.currentStreak);
+      const bonusXp = firstBonus + thirdBonus;
+      const bonusKind = thirdBonus > 0 ? 'third' : firstBonus > 0 ? 'first' : null;
+      const xpEarned = baseXp + bonusXp + streakBonus;
+
+      await tx.focusSession.update({
+        where: { id: session.id },
+        data: {
+          status: 'completed',
+          actualDuration,
+          completedAt,
+          xpEarned,
+        },
+      });
 
       const updatedUser = await tx.user.update({
         where: { id: user.id },
@@ -161,7 +162,7 @@ export class SessionsService {
         select: { totalXp: true, currentStreak: true, longestStreak: true },
       });
 
-      return { updatedUser, xpEarned, bonusXp, bonusKind };
+      return { updatedUser, xpEarned, bonusXp, bonusKind, streakBonus };
     });
 
     return {
@@ -169,6 +170,7 @@ export class SessionsService {
       xpEarned: result.xpEarned,
       bonusXp: result.bonusXp,
       bonusKind: result.bonusKind,
+      streakBonus: result.streakBonus,
       totalXp: result.updatedUser.totalXp,
       level: levelFromTotalXp(result.updatedUser.totalXp),
       currentStreak: result.updatedUser.currentStreak,

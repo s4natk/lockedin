@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   firstSessionBonus,
+  sevenDayStreakBonus,
   thirdSessionBonus,
   levelFromTotalXp,
   nextStreak,
@@ -50,6 +51,14 @@ describe('thirdSessionBonus', () => {
     expect(thirdSessionBonus(2)).toBe(25);
     expect(thirdSessionBonus(0)).toBe(0);
     expect(thirdSessionBonus(3)).toBe(0);
+  });
+});
+
+describe('sevenDayStreakBonus', () => {
+  it('awards 50 XP only when the streak reaches 7', () => {
+    expect(sevenDayStreakBonus(6, 7)).toBe(50);
+    expect(sevenDayStreakBonus(7, 7)).toBe(0);
+    expect(sevenDayStreakBonus(7, 8)).toBe(0);
   });
 });
 

@@ -17,6 +17,7 @@ export {
   nextStreak,
   thirdSessionBonus,
   requiredXpForLevel,
+  sevenDayStreakBonus,
   xpForFocusedMinutes,
   type StreakState,
 } from './progression.js';
