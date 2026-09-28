@@ -3,6 +3,7 @@ import { AchievementsModule } from './achievements/achievements.module.js';
 import { AnalyticsModule } from './analytics/analytics.module.js';
 import { CategoriesModule } from './categories/categories.module.js';
 import { DashboardModule } from './dashboard/dashboard.module.js';
+import { EnvironmentsModule } from './environments/environments.module.js';
 import { HealthModule } from './health/health.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { ProgressionModule } from './progression/progression.module.js';
@@ -22,6 +23,7 @@ import { UsersModule } from './users/users.module.js';
     DashboardModule,
     AnalyticsModule,
     AchievementsModule,
+    EnvironmentsModule,
   ],
 })
 export class AppModule {}

@@ -58,6 +58,10 @@ describe('Health (e2e)', () => {
     return request(app.getHttpServer()).get('/achievements').expect(401);
   });
 
+  it('GET /environments rejects a missing token', () => {
+    return request(app.getHttpServer()).get('/environments').expect(401);
+  });
+
   afterEach(async () => {
     await app.close();
   });

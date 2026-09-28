@@ -131,3 +131,13 @@ model UserAchievement {
   @@id([userId, achievementCode])
   @@index([userId])
 }
+
+model Environment {
+  code           String @id
+  name           String
+  description    String
+  requiredLevel  Int
+  sortOrder      Int
+
+  @@index([sortOrder])
+}

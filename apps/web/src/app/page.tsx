@@ -103,6 +103,9 @@ export default function Home() {
           <Link href="/achievements" className="text-sm text-zinc-400">
             Achievements
           </Link>
+          <Link href="/environments" className="text-sm text-zinc-400">
+            Environments
+          </Link>
         </div>
         <Show when="signed-out">
           <SignInButton>
