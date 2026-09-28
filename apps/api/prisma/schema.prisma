@@ -39,9 +39,10 @@ model User {
   lastActiveDate DateTime? @db.Date
   createdAt      DateTime  @default(now())
 
-  categories Category[]
-  tasks      Task[]
-  sessions   FocusSession[]
+  categories   Category[]
+  tasks        Task[]
+  sessions     FocusSession[]
+  achievements UserAchievement[]
 }
 
 model Category {
@@ -114,5 +115,19 @@ model Achievement {
   threshold   Int
   sortOrder   Int
 
+  awards UserAchievement[]
+
   @@index([sortOrder])
+}
+
+model UserAchievement {
+  userId          String
+  achievementCode String
+  earnedAt        DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementCode], references: [code], onDelete: Cascade)
+
+  @@id([userId, achievementCode])
+  @@index([userId])
 }

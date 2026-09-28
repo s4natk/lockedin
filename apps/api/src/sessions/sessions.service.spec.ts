@@ -1,7 +1,7 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import type { PrismaService } from '../prisma/prisma.service.js';
 import type { UsersService } from '../users/users.service.js';
-import { SessionsService } from './sessions.service.js';
+import { SessionsService, achievementsToAward } from './sessions.service.js';
 
 const authUser = {
   clerkId: 'user_123',
@@ -61,7 +61,14 @@ describe('SessionsService', () => {
         },
         $transaction: vi.fn(async (callback: (tx: unknown) => Promise<unknown>) =>
           callback({
-            focusSession: { update: updateSession, count: vi.fn().mockResolvedValue(1) },
+            focusSession: { update: updateSession, count: vi.fn().mockResolvedValue(1),
+              aggregate: vi.fn().mockResolvedValue({ _sum: { actualDuration: 0 } }),
+            },
+            achievement: { findMany: vi.fn().mockResolvedValue([]) },
+            userAchievement: {
+              findMany: vi.fn().mockResolvedValue([]),
+              createMany: vi.fn(),
+            },
             user: {
               findUniqueOrThrow: vi.fn().mockResolvedValue({
                 currentStreak: 0,
@@ -102,6 +109,7 @@ describe('SessionsService', () => {
       level: 1,
       currentStreak: 1,
       longestStreak: 1,
+      achievements: [],
     });
   });
 
@@ -124,7 +132,14 @@ describe('SessionsService', () => {
         },
         $transaction: vi.fn(async (callback: (tx: unknown) => Promise<unknown>) =>
           callback({
-            focusSession: { update: updateSession, count: vi.fn().mockResolvedValue(0) },
+            focusSession: { update: updateSession, count: vi.fn().mockResolvedValue(0),
+              aggregate: vi.fn().mockResolvedValue({ _sum: { actualDuration: 0 } }),
+            },
+            achievement: { findMany: vi.fn().mockResolvedValue([]) },
+            userAchievement: {
+              findMany: vi.fn().mockResolvedValue([]),
+              createMany: vi.fn(),
+            },
             user: {
               findUniqueOrThrow: vi.fn().mockResolvedValue({
                 currentStreak: 0,
@@ -165,7 +180,14 @@ describe('SessionsService', () => {
         },
         $transaction: vi.fn(async (callback: (tx: unknown) => Promise<unknown>) =>
           callback({
-            focusSession: { update: updateSession, count: vi.fn().mockResolvedValue(2) },
+            focusSession: { update: updateSession, count: vi.fn().mockResolvedValue(2),
+              aggregate: vi.fn().mockResolvedValue({ _sum: { actualDuration: 0 } }),
+            },
+            achievement: { findMany: vi.fn().mockResolvedValue([]) },
+            userAchievement: {
+              findMany: vi.fn().mockResolvedValue([]),
+              createMany: vi.fn(),
+            },
             user: {
               findUniqueOrThrow: vi.fn().mockResolvedValue({
                 currentStreak: 0,
@@ -210,7 +232,14 @@ describe('SessionsService', () => {
         },
         $transaction: vi.fn(async (callback: (tx: unknown) => Promise<unknown>) =>
           callback({
-            focusSession: { update: updateSession, count: vi.fn().mockResolvedValue(1) },
+            focusSession: { update: updateSession, count: vi.fn().mockResolvedValue(1),
+              aggregate: vi.fn().mockResolvedValue({ _sum: { actualDuration: 0 } }),
+            },
+            achievement: { findMany: vi.fn().mockResolvedValue([]) },
+            userAchievement: {
+              findMany: vi.fn().mockResolvedValue([]),
+              createMany: vi.fn(),
+            },
             user: {
               findUniqueOrThrow: vi.fn().mockResolvedValue({
                 currentStreak: 6,
@@ -292,7 +321,14 @@ describe('SessionsService', () => {
         },
         $transaction: vi.fn(async (callback: (tx: unknown) => Promise<unknown>) =>
           callback({
-            focusSession: { update: updateSession, count: vi.fn().mockResolvedValue(1) },
+            focusSession: { update: updateSession, count: vi.fn().mockResolvedValue(1),
+              aggregate: vi.fn().mockResolvedValue({ _sum: { actualDuration: 0 } }),
+            },
+            achievement: { findMany: vi.fn().mockResolvedValue([]) },
+            userAchievement: {
+              findMany: vi.fn().mockResolvedValue([]),
+              createMany: vi.fn(),
+            },
             user: {
               findUniqueOrThrow: vi.fn().mockResolvedValue({
                 currentStreak: 0,
@@ -359,5 +395,35 @@ describe('SessionsService', () => {
     );
     const resumeData = update.mock.calls[1][0].data as { expectedEndAt: Date };
     expect(resumeData.expectedEndAt.getTime() - expectedEndAt.getTime()).toBeGreaterThanOrEqual(30_000);
+  });
+});
+
+describe('achievementsToAward', () => {
+  const catalog = [
+    { code: 'locked_in', name: 'Locked In', rule: 'first_session' as const, threshold: 1 },
+    { code: 'deep_work', name: 'Deep Work', rule: 'single_session_seconds' as const, threshold: 5400 },
+    { code: 'consistency', name: 'Consistency', rule: 'streak_days' as const, threshold: 7 },
+  ];
+
+  it('awards the first session and skips one the user already has', () => {
+    const earned = achievementsToAward(catalog, new Set(['locked_in']), {
+      completedCount: 1,
+      totalFocusSeconds: 1500,
+      sessionSeconds: 1500,
+      streakDays: 1,
+    });
+
+    expect(earned.map((item) => item.code)).toEqual([]);
+  });
+
+  it('awards a 90-minute session and a 7-day streak together', () => {
+    const earned = achievementsToAward(catalog, new Set(), {
+      completedCount: 2,
+      totalFocusSeconds: 5400,
+      sessionSeconds: 5400,
+      streakDays: 7,
+    });
+
+    expect(earned.map((item) => item.code)).toEqual(['locked_in', 'deep_work', 'consistency']);
   });
 });

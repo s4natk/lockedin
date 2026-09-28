@@ -160,7 +160,36 @@ export class SessionsService {
         select: { totalXp: true, currentStreak: true, longestStreak: true },
       });
 
-      return { updatedUser, xpEarned, bonusXp, bonusKind, streakBonus };
+      const [catalog, alreadyEarned, completedCount, focusTotals] = await Promise.all([
+        tx.achievement.findMany({ orderBy: { sortOrder: 'asc' } }),
+        tx.userAchievement.findMany({
+          where: { userId: user.id },
+          select: { achievementCode: true },
+        }),
+        tx.focusSession.count({ where: { userId: user.id, status: 'completed' } }),
+        tx.focusSession.aggregate({
+          where: { userId: user.id, status: 'completed' },
+          _sum: { actualDuration: true },
+        }),
+      ]);
+      const earned = achievementsToAward(
+        catalog,
+        new Set(alreadyEarned.map((row) => row.achievementCode)),
+        {
+          completedCount,
+          totalFocusSeconds: focusTotals._sum.actualDuration ?? 0,
+          sessionSeconds: actualDuration,
+          streakDays: streak.longestStreak,
+        },
+      );
+
+      if (earned.length > 0) {
+        await tx.userAchievement.createMany({
+          data: earned.map((item) => ({ userId: user.id, achievementCode: item.code })),
+        });
+      }
+
+      return { updatedUser, xpEarned, bonusXp, bonusKind, streakBonus, achievements: earned };
     });
 
     return {
@@ -169,6 +198,7 @@ export class SessionsService {
       bonusXp: result.bonusXp,
       bonusKind: result.bonusKind,
       streakBonus: result.streakBonus,
+      achievements: result.achievements.map((item) => ({ code: item.code, name: item.name })),
       totalXp: result.updatedUser.totalXp,
       level: levelFromTotalXp(result.updatedUser.totalXp),
       currentStreak: result.updatedUser.currentStreak,
@@ -251,6 +281,45 @@ export class SessionsService {
 
     return session;
   }
+}
+
+type AchievementCandidate = {
+  code: string;
+  name: string;
+  rule:
+    | 'first_session'
+    | 'total_focus_seconds'
+    | 'single_session_seconds'
+    | 'streak_days'
+    | 'completed_sessions';
+  threshold: number;
+};
+
+export function achievementsToAward(
+  catalog: AchievementCandidate[],
+  owned: Set<string>,
+  stats: {
+    completedCount: number;
+    totalFocusSeconds: number;
+    sessionSeconds: number;
+    streakDays: number;
+  },
+) {
+  return catalog.filter((item) => {
+    if (owned.has(item.code)) return false;
+
+    if (item.rule === 'first_session' || item.rule === 'completed_sessions') {
+      return stats.completedCount >= item.threshold;
+    }
+    if (item.rule === 'total_focus_seconds') {
+      return stats.totalFocusSeconds >= item.threshold;
+    }
+    if (item.rule === 'single_session_seconds') {
+      return stats.sessionSeconds >= item.threshold;
+    }
+
+    return stats.streakDays >= item.threshold;
+  });
 }
 
 function focusedSeconds(

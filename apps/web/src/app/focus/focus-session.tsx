@@ -27,6 +27,7 @@ type Completion = {
   totalXp: number;
   level: number;
   currentStreak: number;
+  achievements: { code: string; name: string }[];
 };
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
@@ -233,7 +234,11 @@ export function FocusSession() {
           {completion.bonusXp > 0
             ? ` · +${completion.bonusXp} ${completion.bonusKind === "third" ? "third session" : "first session"}`
             : ""}
-          {completion.streakBonus > 0 ? ` · +${completion.streakBonus} seven-day streak` : ""} · Level{" "}
+          {completion.streakBonus > 0 ? ` · +${completion.streakBonus} seven-day streak` : ""}
+          {completion.achievements.length > 0
+            ? ` · ${completion.achievements.map((item) => item.name).join(", ")}`
+            : ""}{" "}
+          · Level{" "}
           {completion.level} · {completion.currentStreak} day streak
         </p>
       ) : null}
