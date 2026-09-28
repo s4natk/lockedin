@@ -2,6 +2,7 @@
 
 import { useAuth } from "@clerk/nextjs";
 import { FOCUS_MODE_IDS, FOCUS_MODES, type FocusModeId } from "@lockedin/shared";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -179,18 +180,36 @@ export function FocusSession({ accentClass = "bg-zinc-100" }: { accentClass?: st
     const title = session.task?.title ?? "Focus";
 
     return (
-      <div className="flex min-h-[70vh] flex-col items-center justify-center text-center">
+      <motion.div
+        className="flex min-h-[70vh] flex-col items-center justify-center text-center"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: "easeOut" }}
+      >
         <p className="font-mono text-xs tracking-[0.28em] text-zinc-500">
           {FOCUS_MODES[session.mode].label}
         </p>
         <h1 className="mt-6 max-w-lg text-3xl font-medium tracking-tight">{title}</h1>
-        <p className="mt-10 font-mono text-7xl tracking-tight tabular-nums">
+        <motion.p
+          className="mt-10 font-mono text-7xl tracking-tight tabular-nums"
+          animate={{ opacity: session.pausedAt ? 0.4 : 1 }}
+          transition={{ duration: 0.35 }}
+        >
           {formatRemaining(remainingSeconds)}
-        </p>
+        </motion.p>
         <div className="mt-8 h-1 w-full max-w-sm overflow-hidden rounded-full bg-zinc-800">
-          <div className={`h-full ${accentClass}`} style={{ width: `${progress * 100}%` }} />
+          <motion.div
+            className={`h-full ${accentClass}`}
+            initial={false}
+            animate={{ width: `${progress * 100}%` }}
+            transition={{ duration: session.pausedAt ? 0 : 0.9, ease: "linear" }}
+          />
         </div>
-        {session.pausedAt ? <p className="mt-6 text-sm text-zinc-400">Paused</p> : null}
+        {session.pausedAt ? (
+          <motion.p className="mt-6 text-sm text-zinc-400" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            Paused
+          </motion.p>
+        ) : null}
         {remainingSeconds === 0 ? (
           <p className="mt-6 text-sm text-zinc-400">Time is up.</p>
         ) : null}
@@ -222,7 +241,7 @@ export function FocusSession({ accentClass = "bg-zinc-100" }: { accentClass?: st
             Finish
           </button>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
