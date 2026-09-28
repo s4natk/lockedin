@@ -20,6 +20,14 @@ enum SessionStatus {
   cancelled
 }
 
+enum AchievementRule {
+  first_session
+  total_focus_seconds
+  single_session_seconds
+  streak_days
+  completed_sessions
+}
+
 model User {
   id             String    @id @default(cuid())
   clerkId        String    @unique
@@ -95,4 +103,16 @@ model FocusSession {
   @@index([userId, status])
   @@index([taskId])
   @@index([categoryId])
+}
+
+model Achievement {
+  code        String          @id
+  name        String
+  description String
+  rule        AchievementRule
+  /// Seconds, sessions, or streak days, depending on the rule.
+  threshold   Int
+  sortOrder   Int
+
+  @@index([sortOrder])
 }
