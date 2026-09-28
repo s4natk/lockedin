@@ -32,7 +32,7 @@ type Completion = {
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
-export function FocusSession() {
+export function FocusSession({ accentClass = "bg-zinc-100" }: { accentClass?: string }) {
   const { getToken } = useAuth();
   const searchParams = useSearchParams();
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -188,7 +188,7 @@ export function FocusSession() {
           {formatRemaining(remainingSeconds)}
         </p>
         <div className="mt-8 h-1 w-full max-w-sm overflow-hidden rounded-full bg-zinc-800">
-          <div className="h-full bg-zinc-100" style={{ width: `${progress * 100}%` }} />
+          <div className={`h-full ${accentClass}`} style={{ width: `${progress * 100}%` }} />
         </div>
         {session.pausedAt ? <p className="mt-6 text-sm text-zinc-400">Paused</p> : null}
         {remainingSeconds === 0 ? (
