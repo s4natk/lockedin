@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AchievementsModule } from './achievements/achievements.module.js';
 import { AnalyticsModule } from './analytics/analytics.module.js';
 import { CategoriesModule } from './categories/categories.module.js';
 import { DashboardModule } from './dashboard/dashboard.module.js';
@@ -20,6 +21,7 @@ import { UsersModule } from './users/users.module.js';
     ProgressionModule,
     DashboardModule,
     AnalyticsModule,
+    AchievementsModule,
   ],
 })
 export class AppModule {}

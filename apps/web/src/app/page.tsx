@@ -100,6 +100,9 @@ export default function Home() {
           <Link href="/history" className="text-sm text-zinc-400">
             History
           </Link>
+          <Link href="/achievements" className="text-sm text-zinc-400">
+            Achievements
+          </Link>
         </div>
         <Show when="signed-out">
           <SignInButton>
