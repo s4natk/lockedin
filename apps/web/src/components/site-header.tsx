@@ -33,7 +33,17 @@ export function SiteHeader({
         <Link href="/" className={`font-mono text-xs tracking-[0.28em] ${wordmarkClass}`}>
           LOCKEDIN
         </Link>
-        {children}
+        <div className="flex items-center gap-4">
+          <a
+            href="https://github.com/s4natk/lockedin"
+            target="_blank"
+            rel="noreferrer"
+            className={`text-sm ${linkClass}`}
+          >
+            GitHub
+          </a>
+          {children}
+        </div>
       </div>
       {showNav ? (
         <nav className="flex flex-wrap gap-x-4 gap-y-2">

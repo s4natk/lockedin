@@ -107,7 +107,7 @@ async function HomeProgress() {
 export default function Home() {
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col px-5 py-8 sm:px-8">
-      <SiteHeader showNav={false} wordmarkClass="text-zinc-300">
+      <SiteHeader showNav={false} wordmarkClass="text-zinc-300" linkClass="text-zinc-400">
         <Show when="signed-out">
           <SignInButton>
             <button
