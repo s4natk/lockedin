@@ -88,7 +88,7 @@ export function CategoryList({ onCreated }: { onCreated?: () => void }) {
         />
         <button
           type="submit"
-          className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-200"
+          className="rounded-full bg-zinc-100 px-4 py-2 text-sm text-zinc-950"
         >
           Add
         </button>
@@ -98,9 +98,9 @@ export function CategoryList({ onCreated }: { onCreated?: () => void }) {
       {ready && !error && categories.length === 0 ? (
         <StatusMessage>No categories yet.</StatusMessage>
       ) : null}
-      <ul className="mt-8 space-y-3">
+      <ul className="mt-8 divide-y divide-white/10">
         {categories.map((category) => (
-          <li key={category.id} className="text-zinc-200">
+          <li key={category.id} className="py-3 text-zinc-200">
             {category.name}
           </li>
         ))}

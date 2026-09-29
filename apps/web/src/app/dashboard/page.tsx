@@ -1,5 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
-import Link from "next/link";
+import { SiteHeader } from "@/components/site-header";
 
 type DashboardTask = { id: string; title: string; completed: boolean };
 
@@ -51,29 +51,19 @@ export default async function DashboardPage() {
 
   return (
     <main className="mx-auto min-h-screen max-w-3xl px-5 py-8 sm:px-6">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:gap-x-6">
-        <p className="font-mono text-xs tracking-[0.28em] text-zinc-500">LOCKEDIN</p>
-        <Link href="/" className="text-sm text-zinc-400">
-          Home
-        </Link>
-        <Link href="/focus" className="text-sm text-zinc-400">
-          Focus
-        </Link>
-        <Link href="/analytics" className="text-sm text-zinc-400">
-          Analytics
-        </Link>
-      </div>
-      <h1 className="mt-10 text-3xl font-medium tracking-tight sm:text-4xl">Today</h1>
+      <SiteHeader />
+      <p className="mt-12 font-mono text-xs tracking-[0.18em] text-zinc-600">DASHBOARD</p>
+      <h1 className="mt-2 text-3xl font-medium tracking-tight sm:text-4xl">Today</h1>
       {dashboard ? (
         <>
-          <div className="mt-10 grid max-w-md grid-cols-2 gap-8">
-            <div>
+          <div className="mt-10 grid max-w-lg grid-cols-2 gap-3">
+            <div className="rounded-2xl border border-zinc-800 px-5 py-4">
               <p className="font-mono text-xs tracking-[0.2em] text-zinc-500">FOCUS TIME</p>
-              <p className="mt-2 text-3xl">{formatMinutes(dashboard.focusedMinutes)}</p>
+              <p className="mt-3 text-3xl tabular-nums">{formatMinutes(dashboard.focusedMinutes)}</p>
             </div>
-            <div>
+            <div className="rounded-2xl border border-zinc-800 px-5 py-4">
               <p className="font-mono text-xs tracking-[0.2em] text-zinc-500">SESSIONS</p>
-              <p className="mt-2 text-3xl">{dashboard.sessionCount}</p>
+              <p className="mt-3 text-3xl tabular-nums">{dashboard.sessionCount}</p>
             </div>
           </div>
           <section className="mt-12">
@@ -81,9 +71,9 @@ export default async function DashboardPage() {
             {dashboard.tasks.length === 0 ? (
               <p className="mt-4 text-sm text-zinc-500">No open tasks.</p>
             ) : (
-              <ul className="mt-4 space-y-3">
+              <ul className="mt-4 divide-y divide-white/10">
                 {dashboard.tasks.map((task) => (
-                  <li key={task.id} className={task.completed ? "text-zinc-500 line-through" : "text-zinc-100"}>
+                  <li key={task.id} className={`py-3 ${task.completed ? "text-zinc-500 line-through" : "text-zinc-100"}`}>
                     {task.title}
                   </li>
                 ))}
@@ -95,9 +85,9 @@ export default async function DashboardPage() {
             {dashboard.recentSessions.length === 0 ? (
               <p className="mt-4 text-sm text-zinc-500">No sessions yet.</p>
             ) : (
-              <ul className="mt-4 space-y-3">
+              <ul className="mt-4 divide-y divide-white/10">
                 {dashboard.recentSessions.map((session) => (
-                  <li key={session.id} className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+                  <li key={session.id} className="flex flex-col gap-1 py-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
                     <span>{session.task?.title ?? "Focus"}</span>
                     <span className="font-mono text-xs text-zinc-500">
                       {session.status} · {formatMinutes(Math.floor((session.actualDuration ?? 0) / 60))} · {session.xpEarned} XP

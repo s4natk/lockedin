@@ -137,7 +137,7 @@ export function TaskList({ revision = 0 }: { revision?: number }) {
           />
           <button
             type="submit"
-            className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-200"
+            className="rounded-full bg-zinc-100 px-4 py-2 text-sm text-zinc-950"
           >
             Add
           </button>
@@ -146,9 +146,9 @@ export function TaskList({ revision = 0 }: { revision?: number }) {
       {error ? <StatusMessage>{error}</StatusMessage> : null}
       {!ready ? <StatusMessage>Loading</StatusMessage> : null}
       {ready && !error && tasks.length === 0 ? <StatusMessage>No tasks yet.</StatusMessage> : null}
-      <ul className="mt-8 space-y-3">
+      <ul className="mt-8 divide-y divide-white/10">
         {tasks.map((task) => (
-          <li key={task.id} className="flex items-baseline justify-between gap-4">
+          <li key={task.id} className="flex items-baseline justify-between gap-4 py-3">
             <button
               type="button"
               onClick={() => void toggle(task)}

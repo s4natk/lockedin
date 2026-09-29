@@ -316,7 +316,7 @@ export function FocusSession({ accentClass = "bg-zinc-100" }: { accentClass?: st
           <button
             type="submit"
             disabled={pending || tasks.length === 0}
-            className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-200"
+            className="rounded-full bg-zinc-100 px-4 py-2 text-sm text-zinc-950"
           >
             Start
           </button>

@@ -1,5 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
-import Link from "next/link";
+import { SiteHeader } from "@/components/site-header";
 import { AnalyticsCharts } from "./charts";
 
 type Weekly = { days: { date: string; minutes: number }[] };
@@ -34,17 +34,10 @@ export default async function AnalyticsPage() {
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-3xl px-6 py-8">
-      <div className="flex items-center gap-6">
-        <p className="font-mono text-xs tracking-[0.28em] text-zinc-500">LOCKEDIN</p>
-        <Link href="/" className="text-sm text-zinc-400">
-          Home
-        </Link>
-        <Link href="/dashboard" className="text-sm text-zinc-400">
-          Dashboard
-        </Link>
-      </div>
-      <h1 className="mt-10 text-4xl font-medium tracking-tight">Analytics</h1>
+    <main className="mx-auto min-h-screen max-w-3xl px-5 py-8 sm:px-6">
+      <SiteHeader />
+      <p className="mt-12 font-mono text-xs tracking-[0.18em] text-zinc-600">WEEK</p>
+      <h1 className="mt-2 text-3xl font-medium tracking-tight sm:text-4xl">Analytics</h1>
       <p className="mt-3 max-w-md text-zinc-400">The last seven days, and where the hours went.</p>
       {weekly && categories ? (
         <AnalyticsCharts days={weekly.days} categories={categories.categories} />

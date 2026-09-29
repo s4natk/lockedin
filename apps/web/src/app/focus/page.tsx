@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { Suspense } from "react";
+import { SiteHeader } from "@/components/site-header";
 import { ENVIRONMENT_TREATMENT, activeEnvironment, type EnvironmentCode } from "./environment";
 import { FocusSession } from "./focus-session";
 
@@ -38,8 +39,9 @@ export default async function FocusPage() {
   return (
     <main className={`min-h-screen ${treatment.page}`}>
       <div className="mx-auto max-w-3xl px-5 py-8 sm:px-6">
-        <p className={`font-mono text-xs tracking-[0.28em] ${treatment.ink}`}>LOCKEDIN</p>
-        <h1 className="mt-10 text-3xl font-medium tracking-tight sm:text-4xl">Focus</h1>
+        <SiteHeader wordmarkClass={treatment.ink} linkClass={treatment.ink} />
+        <p className={`mt-12 font-mono text-xs tracking-[0.18em] ${treatment.ink}`}>SESSION</p>
+        <h1 className="mt-2 text-3xl font-medium tracking-tight sm:text-4xl">Focus</h1>
         <p className={`mt-3 max-w-md ${treatment.ink}`}>{environment.name}</p>
         <div className="mt-10">
           <Suspense>
