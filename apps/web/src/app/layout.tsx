@@ -1,6 +1,7 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { DM_Sans, IBM_Plex_Mono } from "next/font/google";
+import type { ReactNode } from "react";
 import "./globals.css";
 
 const sans = DM_Sans({
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
   description: "Focus sessions that turn into progress.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${sans.variable} ${mono.variable} h-full`}>
       <body className="min-h-full font-sans antialiased">
