@@ -1,6 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
-import { CategoryList } from "./category-list";
-import { TaskList } from "./task-list";
+import { TasksBoard } from "./tasks-board";
 
 export default async function TasksPage() {
   const { isAuthenticated, redirectToSignIn } = await auth();
@@ -16,12 +15,7 @@ export default async function TasksPage() {
       <p className="mt-3 max-w-md text-zinc-400">
         Add a category, then attach a task to it.
       </p>
-      <div className="mt-8">
-        <CategoryList />
-      </div>
-      <div className="mt-12">
-        <TaskList />
-      </div>
+      <TasksBoard />
     </main>
   );
 }

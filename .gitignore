@@ -25,6 +25,7 @@ coverage/
 playwright-report/
 test-results/
 blob-report/
+apps/web/playwright/.clerk/
 
 # prisma
 apps/api/prisma/*.db

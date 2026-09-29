@@ -75,7 +75,8 @@ export function FocusSession({ accentClass = "bg-zinc-100" }: { accentClass?: st
     setTasks(nextTasks);
     setTaskId((current) => current || searchParams.get("task") || nextTasks[0]?.id || "");
 
-    const active = (await activeResponse.json()) as Session | null;
+    const activeText = await activeResponse.text();
+    const active = activeText ? (JSON.parse(activeText) as Session) : null;
     if (active) setSession(active);
     setReady(true);
   }, [getToken, searchParams]);

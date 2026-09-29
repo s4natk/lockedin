@@ -17,7 +17,7 @@ type Task = {
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
-export function TaskList() {
+export function TaskList({ revision = 0 }: { revision?: number }) {
   const { getToken } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -59,7 +59,7 @@ export function TaskList() {
     }, 0);
 
     return () => window.clearTimeout(timeout);
-  }, [load]);
+  }, [load, revision]);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

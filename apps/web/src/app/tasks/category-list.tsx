@@ -11,7 +11,7 @@ type Category = {
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
-export function CategoryList() {
+export function CategoryList({ onCreated }: { onCreated?: () => void }) {
   const { getToken } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [name, setName] = useState("");
@@ -72,6 +72,7 @@ export function CategoryList() {
 
     setName("");
     await load();
+    onCreated?.();
   }
 
   return (

@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.9.4",
@@ -20,6 +21,9 @@
     "recharts": "^3.10.1"
   },
   "devDependencies": {
+    "@clerk/backend": "^3.18.1",
+    "@clerk/testing": "^2.2.39",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
