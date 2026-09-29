@@ -1,5 +1,6 @@
 "use client";
 
+import { StatusMessage } from "@/components/status-message";
 import { useAuth } from "@clerk/nextjs";
 import { useCallback, useEffect, useState } from "react";
 
@@ -15,20 +16,26 @@ export function CategoryList() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
 
   const load = useCallback(async () => {
     const token = await getToken();
-    if (!token) return;
+    if (!token) {
+      setReady(true);
+      return;
+    }
 
     const response = await fetch(`${apiUrl}/categories`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!response.ok) {
       setError("Could not load categories.");
+      setReady(true);
       return;
     }
 
     setCategories((await response.json()) as Category[]);
+    setReady(true);
   }, [getToken]);
 
   useEffect(() => {
@@ -85,7 +92,11 @@ export function CategoryList() {
           Add
         </button>
       </form>
-      {error ? <p className="mt-3 text-sm text-zinc-400">{error}</p> : null}
+      {error ? <StatusMessage>{error}</StatusMessage> : null}
+      {!ready ? <StatusMessage>Loading</StatusMessage> : null}
+      {ready && !error && categories.length === 0 ? (
+        <StatusMessage>No categories yet.</StatusMessage>
+      ) : null}
       <ul className="mt-8 space-y-3">
         {categories.map((category) => (
           <li key={category.id} className="text-zinc-200">

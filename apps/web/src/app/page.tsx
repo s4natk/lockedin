@@ -2,6 +2,7 @@ import { Show, SignInButton, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { STREAK_MINIMUM_MINUTES } from "@lockedin/shared";
+import { StatusMessage } from "@/components/status-message";
 
 async function SignedInEmail() {
   const { isAuthenticated, getToken } = await auth();
@@ -47,16 +48,21 @@ async function HomeProgress() {
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
   let progression: Progression | null = null;
+  let failed = false;
 
   try {
     const response = await fetch(`${apiUrl}/progression`, {
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
     });
-    if (!response.ok) return null;
-    progression = (await response.json()) as Progression;
+    if (!response.ok) failed = true;
+    else progression = (await response.json()) as Progression;
   } catch {
-    return null;
+    failed = true;
+  }
+
+  if (failed || !progression) {
+    return <StatusMessage>Could not load your progress.</StatusMessage>;
   }
 
   const span = progression.nextLevelXp - progression.currentLevelXp;

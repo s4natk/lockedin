@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { StatusMessage } from "@/components/status-message";
 import { AmbientAudio } from "./ambient-audio";
 import { formatRemaining, useFocusTimer } from "./use-focus-timer";
 
@@ -44,6 +45,7 @@ export function FocusSession({ accentClass = "bg-zinc-100" }: { accentClass?: st
   const [completion, setCompletion] = useState<Completion | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [ready, setReady] = useState(false);
   const { remainingSeconds, progress } = useFocusTimer(
     session?.expectedEndAt ?? null,
     session?.plannedDuration ?? 0,
@@ -52,7 +54,10 @@ export function FocusSession({ accentClass = "bg-zinc-100" }: { accentClass?: st
 
   const load = useCallback(async () => {
     const token = await getToken();
-    if (!token) return;
+    if (!token) {
+      setReady(true);
+      return;
+    }
 
     const headers = { Authorization: `Bearer ${token}` };
     const [taskResponse, activeResponse] = await Promise.all([
@@ -62,6 +67,7 @@ export function FocusSession({ accentClass = "bg-zinc-100" }: { accentClass?: st
 
     if (!taskResponse.ok || !activeResponse.ok) {
       setError("Could not load the focus session.");
+      setReady(true);
       return;
     }
 
@@ -71,6 +77,7 @@ export function FocusSession({ accentClass = "bg-zinc-100" }: { accentClass?: st
 
     const active = (await activeResponse.json()) as Session | null;
     if (active) setSession(active);
+    setReady(true);
   }, [getToken, searchParams]);
 
   useEffect(() => {
@@ -261,6 +268,12 @@ export function FocusSession({ accentClass = "bg-zinc-100" }: { accentClass?: st
           {completion.level} · {completion.currentStreak} day streak
         </p>
       ) : null}
+      {!ready ? <StatusMessage>Loading</StatusMessage> : null}
+      {error ? <StatusMessage>{error}</StatusMessage> : null}
+      {ready && !error && tasks.length === 0 ? (
+        <StatusMessage>Add a task before you start.</StatusMessage>
+      ) : null}
+      {ready && !error ? (
       <form className="flex flex-col gap-3" onSubmit={start}>
         <select
           value={taskId}
@@ -308,7 +321,7 @@ export function FocusSession({ accentClass = "bg-zinc-100" }: { accentClass?: st
           </button>
         </div>
       </form>
-      {error ? <p className="mt-3 text-sm text-zinc-400">{error}</p> : null}
+      ) : null}
       <Link href="/tasks" className="mt-8 inline-block text-sm text-zinc-500">
         Tasks
       </Link>

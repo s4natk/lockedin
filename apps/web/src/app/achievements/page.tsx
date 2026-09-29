@@ -50,6 +50,9 @@ export default async function AchievementsPage() {
           <p className="mt-3 font-mono text-xs text-zinc-500">
             {earned} / {achievements.length}
           </p>
+          {achievements.length === 0 ? (
+            <p className="mt-8 text-sm text-zinc-500">No achievements yet.</p>
+          ) : null}
           <ul className="mt-10 space-y-6">
             {achievements.map((item) => (
               <li key={item.code}>

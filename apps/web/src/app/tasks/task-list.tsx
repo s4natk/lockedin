@@ -1,5 +1,6 @@
 "use client";
 
+import { StatusMessage } from "@/components/status-message";
 import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -24,10 +25,14 @@ export function TaskList() {
   const [categoryId, setCategoryId] = useState("");
   const [estimatedSessions, setEstimatedSessions] = useState(1);
   const [error, setError] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
 
   const load = useCallback(async () => {
     const token = await getToken();
-    if (!token) return;
+    if (!token) {
+      setReady(true);
+      return;
+    }
 
     const headers = { Authorization: `Bearer ${token}` };
     const [taskResponse, categoryResponse] = await Promise.all([
@@ -37,6 +42,7 @@ export function TaskList() {
 
     if (!taskResponse.ok || !categoryResponse.ok) {
       setError("Could not load tasks.");
+      setReady(true);
       return;
     }
 
@@ -44,6 +50,7 @@ export function TaskList() {
     setCategories(nextCategories);
     setTasks((await taskResponse.json()) as Task[]);
     setCategoryId((current) => current || nextCategories[0]?.id || "");
+    setReady(true);
   }, [getToken]);
 
   useEffect(() => {
@@ -136,7 +143,9 @@ export function TaskList() {
           </button>
         </div>
       </form>
-      {error ? <p className="mt-3 text-sm text-zinc-400">{error}</p> : null}
+      {error ? <StatusMessage>{error}</StatusMessage> : null}
+      {!ready ? <StatusMessage>Loading</StatusMessage> : null}
+      {ready && !error && tasks.length === 0 ? <StatusMessage>No tasks yet.</StatusMessage> : null}
       <ul className="mt-8 space-y-3">
         {tasks.map((task) => (
           <li key={task.id} className="flex items-baseline justify-between gap-4">

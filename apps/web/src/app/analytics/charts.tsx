@@ -25,6 +25,9 @@ export function AnalyticsCharts({ days, categories }: { days: Day[]; categories:
     <div className="mt-10 space-y-12">
       <section>
         <h2 className="font-mono text-xs tracking-[0.2em] text-zinc-500">WEEK</h2>
+        {week.every((day) => day.minutes === 0) ? (
+          <p className="mt-4 text-sm text-zinc-500">No focus time this week.</p>
+        ) : null}
         <div className="mt-4 h-56">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={week}>
