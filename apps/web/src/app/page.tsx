@@ -87,10 +87,28 @@ async function HomeProgress() {
 
 export default function Home() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col justify-between px-6 py-8">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-6">
+    <main className="mx-auto flex min-h-screen max-w-3xl flex-col justify-between px-5 py-8 sm:px-6">
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between gap-4">
           <p className="font-mono text-xs tracking-[0.28em] text-zinc-500">LOCKEDIN</p>
+          <Show when="signed-out">
+            <SignInButton>
+              <button
+                type="button"
+                className="shrink-0 rounded-full border border-zinc-700 px-4 py-2 text-sm whitespace-nowrap text-zinc-200"
+              >
+                Sign in
+              </button>
+            </SignInButton>
+          </Show>
+          <Show when="signed-in">
+            <div className="flex shrink-0 items-center gap-4">
+              <SignedInEmail />
+              <UserButton />
+            </div>
+          </Show>
+        </div>
+        <nav className="flex flex-wrap gap-x-4 gap-y-2">
           <Link href="/tasks" className="text-sm text-zinc-400">
             Tasks
           </Link>
@@ -112,27 +130,11 @@ export default function Home() {
           <Link href="/environments" className="text-sm text-zinc-400">
             Environments
           </Link>
-        </div>
-        <Show when="signed-out">
-          <SignInButton>
-            <button
-              type="button"
-              className="rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-200"
-            >
-              Sign in
-            </button>
-          </SignInButton>
-        </Show>
-        <Show when="signed-in">
-          <div className="flex items-center gap-4">
-            <SignedInEmail />
-            <UserButton />
-          </div>
-        </Show>
+        </nav>
       </div>
 
       <div>
-        <h1 className="max-w-xl text-5xl leading-tight font-medium tracking-tight">
+        <h1 className="max-w-xl text-4xl leading-tight font-medium tracking-tight sm:text-5xl">
           Sit down. Finish the session.
         </h1>
         <p className="mt-5 max-w-md text-lg text-zinc-400">

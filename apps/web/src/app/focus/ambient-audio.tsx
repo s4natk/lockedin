@@ -78,7 +78,7 @@ export function AmbientAudio({ active }: { active: boolean }) {
   }
 
   return (
-    <div className="mt-8 flex items-center gap-3 text-sm text-zinc-400">
+    <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm text-zinc-400">
       {(["rain", "fireplace", "off"] as const).map((option) => (
         <button
           key={option}

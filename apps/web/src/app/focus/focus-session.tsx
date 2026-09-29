@@ -198,7 +198,7 @@ export function FocusSession({ accentClass = "bg-zinc-100" }: { accentClass?: st
         </p>
         <h1 className="mt-6 max-w-lg text-3xl font-medium tracking-tight">{title}</h1>
         <motion.p
-          className="mt-10 font-mono text-7xl tracking-tight tabular-nums"
+          className="mt-10 font-mono text-5xl tracking-tight tabular-nums sm:text-7xl"
           animate={{ opacity: session.pausedAt ? 0.4 : 1 }}
           transition={{ duration: 0.35 }}
         >
@@ -222,7 +222,7 @@ export function FocusSession({ accentClass = "bg-zinc-100" }: { accentClass?: st
         ) : null}
         {error ? <p className="mt-6 text-sm text-zinc-400">{error}</p> : null}
         <AmbientAudio active={remainingSeconds > 0} />
-        <div className="mt-10 flex gap-3">
+        <div className="mt-10 flex flex-wrap justify-center gap-3">
           <button
             type="button"
             onClick={() => void togglePause()}
@@ -288,7 +288,7 @@ export function FocusSession({ accentClass = "bg-zinc-100" }: { accentClass?: st
             </option>
           ))}
         </select>
-        <div className="flex gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <select
             value={mode}
             onChange={(event) => setMode(event.target.value as FocusModeId)}

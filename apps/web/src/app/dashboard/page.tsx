@@ -50,8 +50,8 @@ export default async function DashboardPage() {
   }
 
   return (
-    <main className="mx-auto min-h-screen max-w-3xl px-6 py-8">
-      <div className="flex items-center gap-6">
+    <main className="mx-auto min-h-screen max-w-3xl px-5 py-8 sm:px-6">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:gap-x-6">
         <p className="font-mono text-xs tracking-[0.28em] text-zinc-500">LOCKEDIN</p>
         <Link href="/" className="text-sm text-zinc-400">
           Home
@@ -63,7 +63,7 @@ export default async function DashboardPage() {
           Analytics
         </Link>
       </div>
-      <h1 className="mt-10 text-4xl font-medium tracking-tight">Today</h1>
+      <h1 className="mt-10 text-3xl font-medium tracking-tight sm:text-4xl">Today</h1>
       {dashboard ? (
         <>
           <div className="mt-10 grid max-w-md grid-cols-2 gap-8">
@@ -97,7 +97,7 @@ export default async function DashboardPage() {
             ) : (
               <ul className="mt-4 space-y-3">
                 {dashboard.recentSessions.map((session) => (
-                  <li key={session.id} className="flex items-baseline justify-between gap-4">
+                  <li key={session.id} className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
                     <span>{session.task?.title ?? "Focus"}</span>
                     <span className="font-mono text-xs text-zinc-500">
                       {session.status} · {formatMinutes(Math.floor((session.actualDuration ?? 0) / 60))} · {session.xpEarned} XP
