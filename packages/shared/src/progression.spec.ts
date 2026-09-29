@@ -115,6 +115,20 @@ describe('nextStreak', () => {
     });
   });
 
+  it('uses the UTC date, so a US evening can already be the next day', () => {
+    expect(
+      nextStreak(
+        { currentStreak: 2, longestStreak: 2, lastActiveDate: '2026-09-23' },
+        new Date('2026-09-24T00:30:00.000Z'),
+        25,
+      ),
+    ).toEqual({
+      currentStreak: 3,
+      longestStreak: 3,
+      lastActiveDate: '2026-09-24',
+    });
+  });
+
   it('leaves the streak unchanged below 25 minutes', () => {
     const state = { currentStreak: 3, longestStreak: 3, lastActiveDate: '2026-09-23' };
     expect(nextStreak(state, new Date('2026-09-24T12:00:00.000Z'), 24)).toEqual(state);

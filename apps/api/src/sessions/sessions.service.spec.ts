@@ -269,6 +269,108 @@ describe('SessionsService', () => {
     expect(result.currentStreak).toBe(7);
   });
 
+  it('caps XP at the planned duration', async () => {
+    const startedAt = new Date(Date.now() - 40 * 60 * 1000);
+    const updateSession = vi.fn().mockResolvedValue({});
+    const service = new SessionsService(
+      {
+        focusSession: {
+          findFirst: vi.fn().mockResolvedValue({
+            id: 'session-1',
+            startedAt,
+            plannedDuration: 25 * 60,
+          }),
+        },
+        $transaction: vi.fn(async (callback: (tx: unknown) => Promise<unknown>) =>
+          callback({
+            focusSession: {
+              update: updateSession,
+              count: vi.fn().mockResolvedValue(1),
+              aggregate: vi.fn().mockResolvedValue({ _sum: { actualDuration: 0 } }),
+            },
+            achievement: { findMany: vi.fn().mockResolvedValue([]) },
+            userAchievement: {
+              findMany: vi.fn().mockResolvedValue([]),
+              createMany: vi.fn(),
+            },
+            user: {
+              findUniqueOrThrow: vi.fn().mockResolvedValue({
+                currentStreak: 0,
+                longestStreak: 0,
+                lastActiveDate: null,
+              }),
+              update: vi.fn().mockResolvedValue({
+                totalXp: 50,
+                currentStreak: 1,
+                longestStreak: 1,
+              }),
+            },
+          }),
+        ),
+      } as unknown as PrismaService,
+      users,
+    );
+
+    const result = await service.complete(authUser, 'session-1');
+
+    expect(updateSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ actualDuration: 25 * 60, xpEarned: 50 }),
+      }),
+    );
+    expect(result.xpEarned).toBe(50);
+  });
+
+  it('leaves an open pause out of the XP', async () => {
+    const startedAt = new Date(Date.now() - 25 * 60 * 1000);
+    const pausedAt = new Date(Date.now() - 10 * 60 * 1000);
+    const updateSession = vi.fn().mockResolvedValue({});
+    const service = new SessionsService(
+      {
+        focusSession: {
+          findFirst: vi.fn().mockResolvedValue({
+            id: 'session-1',
+            startedAt,
+            plannedDuration: 25 * 60,
+            pausedSeconds: 0,
+            pausedAt,
+          }),
+        },
+        $transaction: vi.fn(async (callback: (tx: unknown) => Promise<unknown>) =>
+          callback({
+            focusSession: {
+              update: updateSession,
+              count: vi.fn().mockResolvedValue(1),
+              aggregate: vi.fn().mockResolvedValue({ _sum: { actualDuration: 0 } }),
+            },
+            achievement: { findMany: vi.fn().mockResolvedValue([]) },
+            userAchievement: {
+              findMany: vi.fn().mockResolvedValue([]),
+              createMany: vi.fn(),
+            },
+            user: {
+              findUniqueOrThrow: vi.fn().mockResolvedValue({
+                currentStreak: 0,
+                longestStreak: 0,
+                lastActiveDate: null,
+              }),
+              update: vi.fn().mockResolvedValue({
+                totalXp: 30,
+                currentStreak: 0,
+                longestStreak: 0,
+              }),
+            },
+          }),
+        ),
+      } as unknown as PrismaService,
+      users,
+    );
+
+    const result = await service.complete(authUser, 'session-1');
+
+    expect(result.xpEarned).toBe(30);
+  });
+
   it('hides another user session on complete', async () => {
     const service = new SessionsService(
       { focusSession: { findFirst: vi.fn().mockResolvedValue(null) } } as unknown as PrismaService,
@@ -395,6 +497,55 @@ describe('SessionsService', () => {
     );
     const resumeData = update.mock.calls[1][0].data as { expectedEndAt: Date };
     expect(resumeData.expectedEndAt.getTime() - expectedEndAt.getTime()).toBeGreaterThanOrEqual(30_000);
+  });
+
+  it('refuses to resume a session that is not paused', async () => {
+    const service = new SessionsService(
+      {
+        focusSession: {
+          findFirst: vi.fn().mockResolvedValue({
+            id: 'session-1',
+            startedAt: new Date(),
+            plannedDuration: 25 * 60,
+            pausedAt: null,
+            pausedSeconds: 0,
+            expectedEndAt: new Date(),
+          }),
+        },
+      } as unknown as PrismaService,
+      users,
+    );
+
+    await expect(service.resume(authUser, 'session-1')).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('hides another user session on pause, resume, and cancel', async () => {
+    const update = vi.fn();
+    const service = new SessionsService(
+      {
+        focusSession: { findFirst: vi.fn().mockResolvedValue(null), update },
+      } as unknown as PrismaService,
+      users,
+    );
+
+    await expect(service.pause(authUser, 'their-session')).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.resume(authUser, 'their-session')).rejects.toBeInstanceOf(NotFoundException);
+    await expect(service.cancel(authUser, 'their-session')).rejects.toBeInstanceOf(NotFoundException);
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it('lists only the signed-in user sessions', async () => {
+    const findMany = vi.fn().mockResolvedValue([]);
+    const service = new SessionsService(
+      { focusSession: { findMany } } as unknown as PrismaService,
+      users,
+    );
+
+    await service.list(authUser);
+
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { userId: 'local-user' } }),
+    );
   });
 });
 
